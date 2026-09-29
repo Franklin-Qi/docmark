@@ -15,7 +15,6 @@ class PdfConverter:
 
     def convert(self, input_path: Path, markdown_path: Path) -> list[Path]:
         output_dir = markdown_path.parent
-        stem = markdown_path.stem
         images: list[Path] = []
         blocks: list[str] = []
         image_index = 1
@@ -40,7 +39,7 @@ class PdfConverter:
                     saved = write_image_bytes(
                         image_bytes,
                         output_dir,
-                        stem=stem,
+                        stem="img",
                         index=image_index,
                         suffix=ext,
                     )

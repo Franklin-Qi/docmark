@@ -15,11 +15,11 @@ IMAGE_LINK_RE = re.compile(
 def unique_image_name(output_dir: Path, stem: str, index: int, suffix: str) -> str:
     """Return a filename that does not collide with existing files."""
     suffix = suffix if suffix.startswith(".") else f".{suffix}"
-    candidate = f"{stem}_img_{index:03d}{suffix.lower()}"
+    candidate = f"{stem}_{index:03d}{suffix.lower()}"
     counter = index
     while (output_dir / candidate).exists():
         counter += 1
-        candidate = f"{stem}_img_{counter:03d}{suffix.lower()}"
+        candidate = f"{stem}_{counter:03d}{suffix.lower()}"
     return candidate
 
 

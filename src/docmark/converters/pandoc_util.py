@@ -35,7 +35,6 @@ def convert_with_pandoc(
     """Convert via pandoc and place images beside the Markdown file."""
     pandoc = require_pandoc()
     output_dir = markdown_path.parent
-    stem = markdown_path.stem
 
     with tempfile.TemporaryDirectory(prefix="docmark-media-") as tmp:
         media_root = Path(tmp) / "media"
@@ -71,7 +70,7 @@ def convert_with_pandoc(
             completed.stdout,
             media_root.parent,
             output_dir,
-            stem,
+            "img",
         )
         write_markdown(markdown_path, markdown)
         return images

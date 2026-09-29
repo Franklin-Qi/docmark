@@ -18,7 +18,10 @@ from docmark.convert import convert_path
     "output_path",
     type=click.Path(path_type=Path),
     default=None,
-    help="Output .md file or directory. Default: next to the input file.",
+    help=(
+        "Output .md file, or a parent directory. "
+        "Default: ./output/<name>/<name>.md (dedicated folder per document)."
+    ),
 )
 @click.option(
     "--overwrite/--no-overwrite",
@@ -30,8 +33,8 @@ from docmark.convert import convert_path
 def main(input_path: Path, output_path: Path | None, overwrite: bool) -> None:
     """Convert DOC, DOCX, PDF, and more into clean, editable Markdown.
 
-    Images are written into the same directory as the output Markdown file,
-    using relative links such as ``![...](image_001.png)``.
+    Each document is written into its own folder (Markdown + images together),
+    defaulting to ``./output/<name>/``.
     """
     results = convert_path(input_path, output_path, overwrite=overwrite)
     for result in results:

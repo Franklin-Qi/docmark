@@ -7,6 +7,8 @@ from pathlib import Path
 
 from docmark.converters.registry import get_converter, supported_extensions
 
+DEFAULT_OUTPUT_ROOT = Path("output")
+
 
 @dataclass
 class ConvertResult:
@@ -25,8 +27,8 @@ def convert_file(
 ) -> ConvertResult:
     """Convert one document into Markdown.
 
-    Images extracted from the document are saved in the same directory as the
-    output Markdown file. Markdown image links use bare filenames.
+    By default each document gets its own folder under ``./output/<stem>/``,
+    containing ``<stem>.md`` and any extracted images (same directory).
     """
     input_path = input_path.expanduser().resolve()
     if not input_path.is_file():
@@ -77,24 +79,42 @@ def convert_path(
     results: list[ConvertResult] = []
     for source in sources:
         relative = source.relative_to(input_path)
-        if output_path is None:
-            target = source.with_suffix(".md")
-        else:
-            out_root = output_path.expanduser().resolve()
-            target = out_root / relative.with_suffix(".md")
+        target = _resolve_batch_output_path(relative, source.stem, output_path)
         results.append(convert_file(source, target, overwrite=overwrite))
     return results
 
 
+def output_bundle_dir(stem: str, parent: Path | None = None) -> Path:
+    """Return the dedicated folder for one document's Markdown + images."""
+    root = parent if parent is not None else (Path.cwd() / DEFAULT_OUTPUT_ROOT)
+    return root / stem
+
+
 def _resolve_output_path(input_path: Path, output_path: Path | None) -> Path:
+    stem = input_path.stem
+
     if output_path is None:
-        return input_path.with_suffix(".md")
+        return output_bundle_dir(stem) / f"{stem}.md"
 
     output_path = output_path.expanduser().resolve()
-    if output_path.suffix.lower() == ".md" or (
-        not output_path.exists() and output_path.suffix != ""
-    ):
+
+    # Explicit Markdown file: images still go beside it.
+    if output_path.suffix.lower() == ".md":
         return output_path
 
-    # Treat as directory (existing dir, or path without .md suffix).
-    return output_path / f"{input_path.stem}.md"
+    # Directory (or non-.md path): create a per-document subfolder.
+    return output_bundle_dir(stem, parent=output_path) / f"{stem}.md"
+
+
+def _resolve_batch_output_path(
+    relative: Path,
+    stem: str,
+    output_path: Path | None,
+) -> Path:
+    """Map a relative source path to ``.../<rel-stem>/<name>.md``."""
+    bundle = relative.with_suffix("")  # e.g. docs/a/report.docx -> docs/a/report
+    if output_path is None:
+        parent = Path.cwd() / DEFAULT_OUTPUT_ROOT / bundle
+    else:
+        parent = output_path.expanduser().resolve() / bundle
+    return parent / f"{stem}.md"

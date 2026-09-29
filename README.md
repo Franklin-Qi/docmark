@@ -2,11 +2,18 @@
 
 Convert DOC, DOCX, PDF, and more into clean, editable Markdown.
 
-Images extracted from a document are written into **the same directory** as the
-output Markdown file and referenced with relative filenames:
+Each conversion creates a **dedicated folder** for that document. Markdown and
+images live together inside it:
+
+```text
+output/report/
+├── report.md
+├── img_001.png
+└── img_002.png
+```
 
 ```markdown
-![Diagram](report_img_001.png)
+![Diagram](img_001.png)
 ```
 
 ## Features
@@ -15,7 +22,7 @@ output Markdown file and referenced with relative filenames:
 - **PDF** via [PyMuPDF](https://pymupdf.readthedocs.io/) with embedded image extraction
 - **Also**: HTML, ODT, RTF, EPUB, RST, LaTeX, Org, and Markdown (through pandoc)
 - CLI for single files or whole directories
-- Images always sit beside the `.md` output (no nested `media/` folder in the final result)
+- Default output under `./output/<name>/` (not scattered next to the source)
 
 ## Requirements
 
@@ -35,11 +42,15 @@ pip install -e ".[dev]"
 ## Usage
 
 ```bash
-# Convert one file (writes report.md next to report.docx)
+# Convert one file → ./output/report/report.md (+ images in the same folder)
 docmark report.docx
 
-# Choose output path; images go into the same folder as the .md
-docmark report.pdf -o out/report.md
+# Parent directory: still creates a per-document subfolder
+docmark report.pdf -o ./exports
+# → ./exports/report/report.md
+
+# Explicit Markdown path (images beside that file)
+docmark report.pdf -o ./exports/custom.md
 
 # Convert every supported file under a directory
 docmark ./docs -o ./markdown-out
@@ -51,9 +62,9 @@ Python API:
 from pathlib import Path
 from docmark import convert_file
 
-result = convert_file(Path("report.docx"), Path("out/report.md"))
+result = convert_file(Path("report.docx"))  # → output/report/report.md
 print(result.markdown_path)
-print(result.images)  # paths beside the markdown file
+print(result.images)
 ```
 
 ## Project layout
@@ -67,6 +78,7 @@ docmark/
 │   └── converters/         # format-specific converters
 ├── tests/
 ├── examples/
+├── output/                 # default conversion results (gitignored)
 ├── pyproject.toml
 └── README.md
 ```

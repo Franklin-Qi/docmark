@@ -35,3 +35,9 @@ examples/out/
 *.md.bak
 temp/
 tmp/
+
+# Local source documents dropped in the repo root (keep examples/ fixtures)
+/*.docx
+/*.doc
+/*.pdf
+
